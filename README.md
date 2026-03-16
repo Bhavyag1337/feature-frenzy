@@ -49,3 +49,16 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+## Deploy to GitHub Pages
+
+This repo is configured to deploy automatically to GitHub Pages using GitHub Actions.
+
+1. Push to the `main` branch.
+2. In GitHub, go to **Settings** -> **Pages**.
+3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+4. Wait for the workflow `Deploy to GitHub Pages` to finish.
+
+Your site will be available at:
+
+`https://<your-github-username>.github.io/feature-frenzy/`
