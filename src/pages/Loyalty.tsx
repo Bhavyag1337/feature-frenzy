@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Heart, Gift, Users, TrendingUp, Award } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
+import { getApiBaseUrl } from "@/lib/api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
  
 type RetentionDataPoint = { month: string; returning: number; new: number };
@@ -15,7 +16,7 @@ export default function Loyalty() {
   const [activeOffers, setActiveOffers] = useState<ActiveOffer[]>([]);
   const [stats, setStats] = useState<LoyaltyStats | null>(null);
  
-  const API = import.meta.env.VITE_API_URL;
+  const API = getApiBaseUrl();
  
   useEffect(() => {
     fetch(`${API}/api/customers/retention`)

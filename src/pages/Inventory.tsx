@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Package, AlertTriangle,  Search, Plus, ArrowUpDown } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { getApiBaseUrl } from "@/lib/api";
 
 
 type InventoryItem = {
@@ -25,7 +26,7 @@ export default function Inventory() {
   const [demandForecast, setDemandForecast] = useState<DemandForecastItem[]>([]);
   const [stats, setStats] = useState<InventoryStats | null>(null);
 
-  const API = import.meta.env.VITE_API_URL;
+  const API = getApiBaseUrl();
 
   useEffect(() => {
   fetch(`${API}/api/inventory`)

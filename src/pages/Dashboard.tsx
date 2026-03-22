@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { DollarSign, ShoppingCart, Users, Package, TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { motion } from "framer-motion";
+import { getApiBaseUrl } from "@/lib/api";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Area, AreaChart,
@@ -33,7 +34,7 @@ export default function Dashboard() {
   const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
   const [topProducts, setTopProducts] = useState<ProductItem[]>([]);
 
-  const API = import.meta.env.VITE_API_URL;
+  const API = getApiBaseUrl();
 
   useEffect(() => {
     fetch(`${API}/api/dashboard/stats`)

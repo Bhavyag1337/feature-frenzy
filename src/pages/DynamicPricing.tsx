@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DollarSign, TrendingUp, TrendingDown, Zap, BarChart3 } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
+import { getApiBaseUrl } from "@/lib/api";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
  
 const priceHistory = [
@@ -38,7 +39,7 @@ export default function DynamicPricing() {
   const [pricingRules, setPricingRules] = useState<PricingRule[]>([]);
   const [stats, setStats] = useState<DynamicPricingStats | null>(null);
  
-  const API = import.meta.env.VITE_API_URL;
+  const API = getApiBaseUrl();
  
   useEffect(() => {
     fetch(`${API}/api/pricing/rules`)

@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Clock, ShoppingBag, TrendingUp } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
+import { getApiBaseUrl } from "@/lib/api";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
  
 type PurchasePattern = { day: string; visits: number; purchases: number };
-type SeasonalTrend = { month: string; electronics: number; clothing: number; groceries: number };
 type CustomerSegment = { segment: string; count: number; avg_spend: number; retention: number };
 type ConsumerStats = { repeat_customer_pct?: number; avg_basket_size?: number; conversion_rate?: number };
 
@@ -34,7 +34,7 @@ export default function ConsumerAnalytics() {
   const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>([]);
   const [stats, setStats]                       = useState<ConsumerStats | null>(null);
  
-  const API = import.meta.env.VITE_API_URL;
+  const API = getApiBaseUrl();
  
   useEffect(() => {
     fetch(`${API}/api/analytics/weekly-patterns`)

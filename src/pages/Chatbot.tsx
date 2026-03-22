@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Bot, User, Sparkles, Package, DollarSign, ShoppingBag } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
  
 interface Message {
   id: number;
@@ -31,7 +32,7 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef               = useRef<HTMLDivElement>(null);
  
-  const API = import.meta.env.VITE_API_URL;
+  const API = getApiBaseUrl();
  
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

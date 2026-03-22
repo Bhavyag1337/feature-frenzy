@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, TrendingUp, Users, ThumbsUp } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
+import { getApiBaseUrl } from "@/lib/api";
  
 type Recommendation = {
   customer: string;
@@ -16,7 +17,7 @@ export default function Recommendations() {
   const [popularBundles, setPopularBundles]   = useState<PopularBundle[]>([]);
   const [stats, setStats]                     = useState<RecommendationStats | null>(null);
  
-  const API = import.meta.env.VITE_API_URL;
+  const API = getApiBaseUrl();
  
   useEffect(() => {
     fetch(`${API}/api/recommendations`)
