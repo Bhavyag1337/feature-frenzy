@@ -1,40 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Package, AlertTriangle, TrendingUp, Search, Plus, ArrowUpDown } from "lucide-react";
+import { Package, AlertTriangle,  Search, Plus, ArrowUpDown } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-const demandForecast = [
-  { product: "Earbuds", current: 120, predicted: 180 },
-  { product: "T-Shirts", current: 200, predicted: 160 },
-  { product: "Green Tea", current: 80, predicted: 110 },
-  { product: "LED Bulb", current: 150, predicted: 190 },
-  { product: "Sneakers", current: 90, predicted: 140 },
-];
-
-const initialInventory = [
-  { id: "SKU-001", name: "Wireless Earbuds Pro", category: "Electronics", stock: 42, reorder: 50, status: "Low Stock", demand: "High", price: "₹1,500" },
-  { id: "SKU-002", name: "Cotton T-Shirt Pack", category: "Clothing", stock: 189, reorder: 100, status: "In Stock", demand: "Medium", price: "₹999" },
-  { id: "SKU-003", name: "Organic Green Tea 100g", category: "Groceries", stock: 8, reorder: 30, status: "Critical", demand: "High", price: "₹499" },
-  { id: "SKU-004", name: "Smart LED Bulb 12W", category: "Home", stock: 234, reorder: 80, status: "In Stock", demand: "Low", price: "₹800" },
-  { id: "SKU-005", name: "Running Sneakers", category: "Clothing", stock: 56, reorder: 60, status: "Low Stock", demand: "High", price: "₹2,999" },
-  { id: "SKU-006", name: "Stainless Steel Bottle", category: "Home", stock: 312, reorder: 50, status: "In Stock", demand: "Medium", price: "₹650" },
-  { id: "SKU-007", name: "Bluetooth Speaker", category: "Electronics", stock: 3, reorder: 25, status: "Critical", demand: "High", price: "₹3,200" },
-  { id: "SKU-008", name: "Basmati Rice 5kg", category: "Groceries", stock: 145, reorder: 100, status: "In Stock", demand: "Medium", price: "₹450" },
-];
 
 export default function Inventory() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  const filtered = initialInventory.filter((item) => {
+  const [inventory, setInventory] = useState<any[]>([]);
+const [demandForecast, setDemandForecast] = useState<any[]>([]);
+const [stats, setStats] = useState<any>(null);
+
+const API = import.meta.env.VITE_API_URL;
+
+useEffect(() => {
+  fetch(`${API}/api/inventory`)
+    .then(r => r.json()).then(setInventory);
+
+  fetch(`${API}/api/inventory/demand-forecast`)
+    .then(r => r.json()).then(setDemandForecast);
+
+  fetch(`${API}/api/inventory/stats`)
+    .then(r => r.json()).then(setStats);
+}, []);
+
+  const filtered = inventory.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || item.id.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filterStatus === "All" || item.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
-
-  const lowStock = initialInventory.filter(i => i.status === "Low Stock").length;
-  const critical = initialInventory.filter(i => i.status === "Critical").length;
 
   return (
     <div className="space-y-6">
@@ -49,10 +45,9 @@ export default function Inventory() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Products" value="892" change="12 added this week" changeType="positive" icon={Package} index={0} />
-        <StatCard label="Low Stock" value={String(lowStock)} change="Needs attention" changeType="negative" icon={AlertTriangle} index={1} />
-        <StatCard label="Critical Stock" value={String(critical)} change="Reorder immediately" changeType="negative" icon={AlertTriangle} index={2} />
-        <StatCard label="Demand Accuracy" value="94.2%" change="+2.1% improved" changeType="positive" icon={TrendingUp} index={3} />
+        <StatCard label="Total Products" value={stats?.total_products?.toString() ?? "—"} change="12 added this week" changeType="positive" icon={Package} index={0} />
+        <StatCard label="Low Stock" value={stats?.low_stock?.toString() ?? "—"} change="Needs attention" changeType="negative" icon={AlertTriangle} index={1} />
+        <StatCard label="Critical Stock" value={stats?.critical_stock?.toString() ?? "—"} change="Reorder immediately" changeType="negative" icon={AlertTriangle} index={2} />
       </div>
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-5">
@@ -106,7 +101,7 @@ export default function Inventory() {
                   <td className="table-cell font-medium">{item.name}</td>
                   <td className="table-cell">{item.category}</td>
                   <td className="table-cell font-mono">{item.stock}</td>
-                  <td className="table-cell font-mono">{item.price}</td>
+                  <td className="table-cell font-mono">₹{Number(item.price).toLocaleString("en-IN")}</td>
                   <td className="table-cell">
                     <span className={
                       item.status === "In Stock" ? "badge-success" :

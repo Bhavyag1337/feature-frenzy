@@ -1,28 +1,20 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DollarSign, TrendingUp, TrendingDown, Zap, BarChart3 } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
-
+ 
 const priceHistory = [
-  { time: "9AM", optimal: 1500, current: 1500, competitor: 1600 },
+  { time: "9AM",  optimal: 1500, current: 1500, competitor: 1600 },
   { time: "10AM", optimal: 1480, current: 1500, competitor: 1580 },
   { time: "11AM", optimal: 1520, current: 1500, competitor: 1550 },
   { time: "12PM", optimal: 1550, current: 1520, competitor: 1540 },
-  { time: "1PM", optimal: 1580, current: 1550, competitor: 1560 },
-  { time: "2PM", optimal: 1540, current: 1540, competitor: 1570 },
-  { time: "3PM", optimal: 1600, current: 1560, competitor: 1590 },
-  { time: "4PM", optimal: 1620, current: 1580, competitor: 1610 },
+  { time: "1PM",  optimal: 1580, current: 1550, competitor: 1560 },
+  { time: "2PM",  optimal: 1540, current: 1540, competitor: 1570 },
+  { time: "3PM",  optimal: 1600, current: 1560, competitor: 1590 },
+  { time: "4PM",  optimal: 1620, current: 1580, competitor: 1610 },
 ];
-
-const pricingRules = [
-  { product: "Wireless Earbuds Pro", basePrice: "₹1,500", currentPrice: "₹1,580", change: "+5.3%", reason: "High demand detected", status: "Active" },
-  { product: "Cotton T-Shirt Pack", basePrice: "₹999", currentPrice: "₹899", change: "-10%", reason: "Clearance - seasonal end", status: "Active" },
-  { product: "Organic Green Tea", basePrice: "₹499", currentPrice: "₹549", change: "+10%", reason: "Low stock, high demand", status: "Active" },
-  { product: "Smart LED Bulb", basePrice: "₹800", currentPrice: "₹750", change: "-6.2%", reason: "Competitor price match", status: "Pending" },
-  { product: "Running Sneakers", basePrice: "₹2,999", currentPrice: "₹3,299", change: "+10%", reason: "New arrival premium", status: "Active" },
-  { product: "Bluetooth Speaker", basePrice: "₹3,200", currentPrice: "₹2,899", change: "-9.4%", reason: "Expiry approaching", status: "Active" },
-];
-
+ 
 const revenueImpact = [
   { week: "W1", without: 82000, with: 82000 },
   { week: "W2", without: 85000, with: 89000 },
@@ -31,22 +23,35 @@ const revenueImpact = [
   { week: "W5", without: 84000, with: 101000 },
   { week: "W6", without: 86000, with: 108000 },
 ];
-
+ 
 export default function DynamicPricing() {
+  const [pricingRules, setPricingRules] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+ 
+  const API = import.meta.env.VITE_API_URL;
+ 
+  useEffect(() => {
+    fetch(`${API}/api/pricing/rules`)
+      .then(r => r.json()).then(setPricingRules);
+ 
+    fetch(`${API}/api/pricing/stats`)
+      .then(r => r.json()).then(setStats);
+  }, []);
+ 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold tracking-tight text-foreground">Dynamic Pricing Engine</h1>
         <p className="text-sm text-muted-foreground mt-1">AI-based automatic price optimization</p>
       </div>
-
+ 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Revenue Lift" value="+18.2%" change="vs. static pricing" changeType="positive" icon={TrendingUp} index={0} />
-        <StatCard label="Active Rules" value="24" change="6 pending approval" changeType="neutral" icon={Zap} index={1} />
-        <StatCard label="Avg. Price Change" value="±7.3%" change="Within optimal range" changeType="positive" icon={DollarSign} index={2} />
+        <StatCard label="Active Rules" value={stats?.active_rules?.toString() ?? "—"} change={`${stats?.pending_rules ?? 0} pending approval`} changeType="neutral" icon={Zap} index={1} />
+        <StatCard label="Avg. Price Change" value={stats?.avg_change_pct ? `±${stats.avg_change_pct}%` : "—"} change="Within optimal range" changeType="positive" icon={DollarSign} index={2} />
         <StatCard label="Competitor Tracking" value="12" change="Competitors monitored" changeType="positive" icon={BarChart3} index={3} />
       </div>
-
+ 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-5">
           <h3 className="text-sm font-semibold text-foreground">Price Optimization - Earbuds Pro</h3>
@@ -63,7 +68,7 @@ export default function DynamicPricing() {
             </LineChart>
           </ResponsiveContainer>
         </motion.div>
-
+ 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card p-5">
           <h3 className="text-sm font-semibold text-foreground">Revenue Impact</h3>
           <p className="text-xs text-muted-foreground mt-0.5 mb-4">With vs without dynamic pricing</p>
@@ -85,7 +90,7 @@ export default function DynamicPricing() {
           </ResponsiveContainer>
         </motion.div>
       </div>
-
+ 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass-card overflow-hidden">
         <div className="px-5 py-4">
           <h3 className="text-sm font-semibold text-foreground">Active Pricing Rules</h3>
@@ -107,12 +112,12 @@ export default function DynamicPricing() {
               {pricingRules.map((rule) => (
                 <tr key={rule.product} className="table-row">
                   <td className="table-cell font-medium">{rule.product}</td>
-                  <td className="table-cell font-mono">{rule.basePrice}</td>
-                  <td className="table-cell font-mono font-medium">{rule.currentPrice}</td>
+                  <td className="table-cell font-mono">₹{Number(rule.base_price).toLocaleString("en-IN")}</td>
+                  <td className="table-cell font-mono font-medium">₹{Number(rule.current_price).toLocaleString("en-IN")}</td>
                   <td className="table-cell">
-                    <span className={`flex items-center gap-1 text-sm font-mono ${rule.change.startsWith("+") ? "text-success" : "text-destructive"}`}>
-                      {rule.change.startsWith("+") ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                      {rule.change}
+                    <span className={`flex items-center gap-1 text-sm font-mono ${rule.change_pct > 0 ? "text-success" : "text-destructive"}`}>
+                      {rule.change_pct > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {rule.change_pct > 0 ? `+${rule.change_pct}%` : `${rule.change_pct}%`}
                     </span>
                   </td>
                   <td className="table-cell text-xs text-muted-foreground">{rule.reason}</td>

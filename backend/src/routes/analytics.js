@@ -50,7 +50,6 @@ router.get('/weekly-patterns', async (req, res) => {
   }
 });
 
-// GET /api/analytics/seasonal-trends
 router.get('/seasonal-trends', async (req, res) => {
   try {
     const result = await pool.query(
@@ -59,10 +58,9 @@ router.get('/seasonal-trends', async (req, res) => {
        FROM sales_analytics
        WHERE period_type = 'monthly' AND category IS NOT NULL
        GROUP BY period, category
-       ORDER BY recorded_at ASC`
+       ORDER BY MIN(recorded_at) ASC`
     );
 
-    // pivot: group by month
     const pivoted = {};
     result.rows.forEach(({ month, category, value }) => {
       if (!pivoted[month]) pivoted[month] = { month };

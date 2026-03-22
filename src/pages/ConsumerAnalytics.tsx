@@ -1,30 +1,12 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Clock, ShoppingBag, TrendingUp, MapPin } from "lucide-react";
+import { Users, Clock, ShoppingBag, TrendingUp } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
-
-const purchasePatterns = [
-  { day: "Mon", visits: 120, purchases: 45 },
-  { day: "Tue", visits: 98, purchases: 38 },
-  { day: "Wed", visits: 145, purchases: 62 },
-  { day: "Thu", visits: 132, purchases: 55 },
-  { day: "Fri", visits: 178, purchases: 89 },
-  { day: "Sat", visits: 245, purchases: 134 },
-  { day: "Sun", visits: 198, purchases: 98 },
-];
-
-const seasonalTrends = [
-  { month: "Jan", electronics: 42, clothing: 28, groceries: 55 },
-  { month: "Feb", electronics: 38, clothing: 35, groceries: 52 },
-  { month: "Mar", electronics: 45, clothing: 42, groceries: 48 },
-  { month: "Apr", electronics: 35, clothing: 55, groceries: 45 },
-  { month: "May", electronics: 40, clothing: 62, groceries: 50 },
-  { month: "Jun", electronics: 48, clothing: 58, groceries: 55 },
-];
-
+ 
 const behaviorMetrics = [
   { subject: "Frequency", A: 85 },
   { subject: "Basket Size", A: 72 },
@@ -33,29 +15,50 @@ const behaviorMetrics = [
   { subject: "In-Store", A: 90 },
   { subject: "Referrals", A: 42 },
 ];
-
-const customerSegments = [
-  { segment: "High Value", count: 342, avgSpend: "₹8,200", retention: "92%", color: "badge-success" },
-  { segment: "Regular", count: 1289, avgSpend: "₹3,400", retention: "78%", color: "badge-primary" },
-  { segment: "Occasional", count: 1562, avgSpend: "₹1,200", retention: "45%", color: "badge-warning" },
-  { segment: "At Risk", count: 269, avgSpend: "₹800", retention: "22%", color: "badge-destructive" },
-];
-
+ 
+const segmentColorMap: Record<string, string> = {
+  "High Value": "badge-success",
+  "Regular":    "badge-primary",
+  "Occasional": "badge-warning",
+  "At Risk":    "badge-destructive",
+};
+ 
 export default function ConsumerAnalytics() {
+  const [purchasePatterns, setPurchasePatterns] = useState<any[]>([]);
+  const [seasonalTrends, setSeasonalTrends]     = useState<any[]>([]);
+  const [customerSegments, setCustomerSegments] = useState<any[]>([]);
+  const [stats, setStats]                       = useState<any>(null);
+ 
+  const API = import.meta.env.VITE_API_URL;
+ 
+  useEffect(() => {
+    fetch(`${API}/api/analytics/weekly-patterns`)
+      .then(r => r.json()).then(setPurchasePatterns);
+ 
+    fetch(`${API}/api/analytics/seasonal-trends`)
+      .then(r => r.json()).then(setSeasonalTrends);
+ 
+    fetch(`${API}/api/analytics/segments`)
+      .then(r => r.json()).then(setCustomerSegments);
+ 
+    fetch(`${API}/api/analytics/stats`)
+      .then(r => r.json()).then(setStats);
+  }, []);
+ 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold tracking-tight text-foreground">Consumer Behavior Analytics</h1>
         <p className="text-sm text-muted-foreground mt-1">AI-driven insights into customer purchase patterns</p>
       </div>
-
+ 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Avg. Visit Duration" value="12.4 min" change="+3.2% from last week" changeType="positive" icon={Clock} index={0} />
-        <StatCard label="Repeat Customers" value="68%" change="+5.1% this quarter" changeType="positive" icon={Users} index={1} />
-        <StatCard label="Avg. Basket Size" value="₹2,340" change="+8.7% this month" changeType="positive" icon={ShoppingBag} index={2} />
-        <StatCard label="Conversion Rate" value="34.2%" change="-1.3% from last week" changeType="negative" icon={TrendingUp} index={3} />
+        <StatCard label="Repeat Customers" value={stats?.repeat_customer_pct ? `${stats.repeat_customer_pct}%` : "—"} change="+5.1% this quarter" changeType="positive" icon={Users} index={1} />
+        <StatCard label="Avg. Basket Size" value={stats?.avg_basket_size ? `₹${Number(stats.avg_basket_size).toLocaleString("en-IN")}` : "—"} change="+8.7% this month" changeType="positive" icon={ShoppingBag} index={2} />
+        <StatCard label="Conversion Rate" value={stats?.conversion_rate ? `${stats.conversion_rate}%` : "—"} change="-1.3% from last week" changeType="negative" icon={TrendingUp} index={3} />
       </div>
-
+ 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-5">
           <h3 className="text-sm font-semibold text-foreground">Weekly Purchase Patterns</h3>
@@ -71,7 +74,7 @@ export default function ConsumerAnalytics() {
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
-
+ 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card p-5">
           <h3 className="text-sm font-semibold text-foreground">Customer Behavior Profile</h3>
           <p className="text-xs text-muted-foreground mt-0.5 mb-4">Multi-dimensional analysis</p>
@@ -85,7 +88,7 @@ export default function ConsumerAnalytics() {
           </ResponsiveContainer>
         </motion.div>
       </div>
-
+ 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass-card p-5">
         <h3 className="text-sm font-semibold text-foreground">Seasonal Category Trends</h3>
         <p className="text-xs text-muted-foreground mt-0.5 mb-4">Category demand over time</p>
@@ -101,7 +104,7 @@ export default function ConsumerAnalytics() {
           </LineChart>
         </ResponsiveContainer>
       </motion.div>
-
+ 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="glass-card overflow-hidden">
         <div className="px-5 py-4">
           <h3 className="text-sm font-semibold text-foreground">Customer Segments</h3>
@@ -119,10 +122,14 @@ export default function ConsumerAnalytics() {
           <tbody>
             {customerSegments.map((seg) => (
               <tr key={seg.segment} className="table-row">
-                <td className="table-cell"><span className={seg.color}>{seg.segment}</span></td>
-                <td className="table-cell font-mono">{seg.count}</td>
-                <td className="table-cell font-mono font-medium">{seg.avgSpend}</td>
-                <td className="table-cell font-mono">{seg.retention}</td>
+                <td className="table-cell">
+                  <span className={segmentColorMap[seg.segment] ?? "badge-primary"}>{seg.segment}</span>
+                </td>
+                <td className="table-cell font-mono">{Number(seg.count).toLocaleString()}</td>
+                <td className="table-cell font-mono font-medium">
+                  ₹{Number(seg.avg_spend).toLocaleString("en-IN")}
+                </td>
+                <td className="table-cell font-mono">{seg.retention}%</td>
               </tr>
             ))}
           </tbody>
