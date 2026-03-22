@@ -3,10 +3,18 @@ import { motion } from "framer-motion";
 import { ShoppingBag, TrendingUp, Users, ThumbsUp } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
  
+type Recommendation = {
+  customer: string;
+  last_purchased?: string;
+  recommended: { name: string; reason: string; confidence: number }[];
+};
+type PopularBundle = { name: string; items: string[] | string; sales: number; revenue: number };
+type RecommendationStats = { active_profiles?: number };
+
 export default function Recommendations() {
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [popularBundles, setPopularBundles]   = useState<any[]>([]);
-  const [stats, setStats]                     = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [popularBundles, setPopularBundles]   = useState<PopularBundle[]>([]);
+  const [stats, setStats]                     = useState<RecommendationStats | null>(null);
  
   const API = import.meta.env.VITE_API_URL;
  
@@ -19,7 +27,7 @@ export default function Recommendations() {
  
     fetch(`${API}/api/recommendations/stats`)
       .then(r => r.json()).then(setStats);
-  }, []);
+  }, [API]);
  
   return (
     <div className="space-y-6">
@@ -54,7 +62,7 @@ export default function Recommendations() {
               </div>
             </div>
             <div className="space-y-3">
-              {(rec.recommended ?? []).map((item: any) => (
+              {(rec.recommended ?? []).map((item) => (
                 <div key={item.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                   <div>
                     <p className="text-sm font-medium text-foreground">{item.name}</p>

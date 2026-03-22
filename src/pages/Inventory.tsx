@@ -5,17 +5,29 @@ import StatCard from "@/components/dashboard/StatCard";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 
+type InventoryItem = {
+  id: string;
+  name: string;
+  category: string;
+  stock: number;
+  price: number;
+  status: "In Stock" | "Low Stock" | "Critical";
+  demand: "High" | "Medium" | "Low";
+};
+type DemandForecastItem = { product: string; current: number; predicted: number };
+type InventoryStats = { total_products?: number; low_stock?: number; critical_stock?: number };
+
 export default function Inventory() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  const [inventory, setInventory] = useState<any[]>([]);
-const [demandForecast, setDemandForecast] = useState<any[]>([]);
-const [stats, setStats] = useState<any>(null);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [demandForecast, setDemandForecast] = useState<DemandForecastItem[]>([]);
+  const [stats, setStats] = useState<InventoryStats | null>(null);
 
-const API = import.meta.env.VITE_API_URL;
+  const API = import.meta.env.VITE_API_URL;
 
-useEffect(() => {
+  useEffect(() => {
   fetch(`${API}/api/inventory`)
     .then(r => r.json()).then(setInventory);
 
@@ -24,7 +36,7 @@ useEffect(() => {
 
   fetch(`${API}/api/inventory/stats`)
     .then(r => r.json()).then(setStats);
-}, []);
+}, [API]);
 
   const filtered = inventory.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || item.id.toLowerCase().includes(search.toLowerCase());

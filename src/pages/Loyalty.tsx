@@ -4,11 +4,16 @@ import { Heart, Gift, Users, TrendingUp, Award } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
  
+type RetentionDataPoint = { month: string; returning: number; new: number };
+type LoyalCustomer = { name: string; visits: number; total_spend: number; loyalty_tier: string; points: number; last_visit?: string };
+type ActiveOffer = { title: string; target_tier: string; expiry: string; redemptions: number };
+type LoyaltyStats = { total_members?: number; new_this_month?: number };
+
 export default function Loyalty() {
-  const [retentionData, setRetentionData] = useState<any[]>([]);
-  const [loyalCustomers, setLoyalCustomers] = useState<any[]>([]);
-  const [activeOffers, setActiveOffers] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [retentionData, setRetentionData] = useState<RetentionDataPoint[]>([]);
+  const [loyalCustomers, setLoyalCustomers] = useState<LoyalCustomer[]>([]);
+  const [activeOffers, setActiveOffers] = useState<ActiveOffer[]>([]);
+  const [stats, setStats] = useState<LoyaltyStats | null>(null);
  
   const API = import.meta.env.VITE_API_URL;
  
@@ -24,7 +29,7 @@ export default function Loyalty() {
  
     fetch(`${API}/api/customers/stats`)
       .then(r => r.json()).then(setStats);
-  }, []);
+  }, [API]);
  
   return (
     <div className="space-y-6">

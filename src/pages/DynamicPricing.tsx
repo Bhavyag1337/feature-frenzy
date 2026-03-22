@@ -24,9 +24,19 @@ const revenueImpact = [
   { week: "W6", without: 86000, with: 108000 },
 ];
  
+type PricingRule = {
+  product: string;
+  base_price: number;
+  current_price: number;
+  change_pct: number;
+  reason: string;
+  status: string;
+};
+type DynamicPricingStats = { active_rules?: number; pending_rules?: number; avg_change_pct?: number };
+
 export default function DynamicPricing() {
-  const [pricingRules, setPricingRules] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [pricingRules, setPricingRules] = useState<PricingRule[]>([]);
+  const [stats, setStats] = useState<DynamicPricingStats | null>(null);
  
   const API = import.meta.env.VITE_API_URL;
  
@@ -36,7 +46,7 @@ export default function DynamicPricing() {
  
     fetch(`${API}/api/pricing/stats`)
       .then(r => r.json()).then(setStats);
-  }, []);
+  }, [API]);
  
   return (
     <div className="space-y-6">

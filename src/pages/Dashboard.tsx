@@ -7,6 +7,17 @@ import {
   LineChart, Line, PieChart, Pie, Cell, Area, AreaChart,
 } from "recharts";
 
+type DashboardStats = {
+  revenue?: { label: string };
+  orders?: { total: number };
+  customers?: { total: number; newThisMonth: number };
+  inventory?: { totalItems: number; lowStock: number };
+};
+type SalesData = { month: string; sales: number; profit: number };
+type CategoryData = { name: string; value: number };
+type OrderItem = { id: string; customer: string; amount: number; status: string };
+type ProductItem = { name: string; sales: number; revenue: number };
+
 const COLORS = [
   "hsl(221, 83%, 53%)",
   "hsl(142, 71%, 45%)",
@@ -16,11 +27,11 @@ const COLORS = [
 ];
 
 export default function Dashboard() {
-  const [stats, setStats]             = useState<any>(null);
-  const [salesData, setSalesData]     = useState<any[]>([]);
-  const [categoryData, setCategoryData] = useState<any[]>([]);
-  const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [stats, setStats]             = useState<DashboardStats | null>(null);
+  const [salesData, setSalesData]     = useState<SalesData[]>([]);
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
+  const [topProducts, setTopProducts] = useState<ProductItem[]>([]);
 
   const API = import.meta.env.VITE_API_URL;
 
@@ -39,7 +50,7 @@ export default function Dashboard() {
 
     fetch(`${API}/api/dashboard/top-products`)
       .then(r => r.json()).then(setTopProducts);
-  }, []);
+  }, [API]);
 
   return (
     <div className="space-y-6">

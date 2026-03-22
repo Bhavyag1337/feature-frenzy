@@ -7,6 +7,11 @@ import {
   LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
  
+type PurchasePattern = { day: string; visits: number; purchases: number };
+type SeasonalTrend = { month: string; electronics: number; clothing: number; groceries: number };
+type CustomerSegment = { segment: string; count: number; avg_spend: number; retention: number };
+type ConsumerStats = { repeat_customer_pct?: number; avg_basket_size?: number; conversion_rate?: number };
+
 const behaviorMetrics = [
   { subject: "Frequency", A: 85 },
   { subject: "Basket Size", A: 72 },
@@ -24,10 +29,10 @@ const segmentColorMap: Record<string, string> = {
 };
  
 export default function ConsumerAnalytics() {
-  const [purchasePatterns, setPurchasePatterns] = useState<any[]>([]);
-  const [seasonalTrends, setSeasonalTrends]     = useState<any[]>([]);
-  const [customerSegments, setCustomerSegments] = useState<any[]>([]);
-  const [stats, setStats]                       = useState<any>(null);
+  const [purchasePatterns, setPurchasePatterns] = useState<PurchasePattern[]>([]);
+  const [seasonalTrends, setSeasonalTrends]     = useState<SeasonalTrend[]>([]);
+  const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>([]);
+  const [stats, setStats]                       = useState<ConsumerStats | null>(null);
  
   const API = import.meta.env.VITE_API_URL;
  
@@ -43,7 +48,7 @@ export default function ConsumerAnalytics() {
  
     fetch(`${API}/api/analytics/stats`)
       .then(r => r.json()).then(setStats);
-  }, []);
+  }, [API]);
  
   return (
     <div className="space-y-6">
