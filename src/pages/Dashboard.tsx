@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { DollarSign, ShoppingCart, Users, Package, TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { motion } from "framer-motion";
@@ -5,24 +6,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Area, AreaChart,
 } from "recharts";
-
-const salesData = [
-  { month: "Jan", sales: 4200, profit: 1800 },
-  { month: "Feb", sales: 3800, profit: 1600 },
-  { month: "Mar", sales: 5100, profit: 2200 },
-  { month: "Apr", sales: 4700, profit: 2000 },
-  { month: "May", sales: 5800, profit: 2600 },
-  { month: "Jun", sales: 6200, profit: 2900 },
-  { month: "Jul", sales: 5900, profit: 2700 },
-];
-
-const categoryData = [
-  { name: "Electronics", value: 35 },
-  { name: "Clothing", value: 25 },
-  { name: "Groceries", value: 20 },
-  { name: "Home", value: 12 },
-  { name: "Other", value: 8 },
-];
 
 const COLORS = [
   "hsl(221, 83%, 53%)",
@@ -32,22 +15,32 @@ const COLORS = [
   "hsl(0, 84%, 60%)",
 ];
 
-const recentOrders = [
-  { id: "ORD-4291", customer: "Priya Sharma", amount: "₹2,450", status: "Delivered", time: "2h ago" },
-  { id: "ORD-4290", customer: "Rahul Verma", amount: "₹1,890", status: "Processing", time: "3h ago" },
-  { id: "ORD-4289", customer: "Anita Desai", amount: "₹3,200", status: "Shipped", time: "5h ago" },
-  { id: "ORD-4288", customer: "Vikram Singh", amount: "₹890", status: "Delivered", time: "6h ago" },
-  { id: "ORD-4287", customer: "Meera Patel", amount: "₹4,100", status: "Processing", time: "7h ago" },
-];
-
-const topProducts = [
-  { name: "Wireless Earbuds Pro", sales: 342, revenue: "₹5,13,000", trend: "up" },
-  { name: "Cotton T-Shirt Pack", sales: 289, revenue: "₹2,89,000", trend: "up" },
-  { name: "Organic Green Tea", sales: 256, revenue: "₹1,28,000", trend: "down" },
-  { name: "Smart LED Bulb", sales: 198, revenue: "₹1,58,400", trend: "up" },
-];
-
 export default function Dashboard() {
+  const [stats, setStats]             = useState<any>(null);
+  const [salesData, setSalesData]     = useState<any[]>([]);
+  const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [topProducts, setTopProducts] = useState<any[]>([]);
+
+  const API = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    fetch(`${API}/api/dashboard/stats`)
+      .then(r => r.json()).then(setStats);
+
+    fetch(`${API}/api/dashboard/sales-trend`)
+      .then(r => r.json()).then(setSalesData);
+
+    fetch(`${API}/api/dashboard/category-distribution`)
+      .then(r => r.json()).then(setCategoryData);
+
+    fetch(`${API}/api/dashboard/recent-orders`)
+      .then(r => r.json()).then(setRecentOrders);
+
+    fetch(`${API}/api/dashboard/top-products`)
+      .then(r => r.json()).then(setTopProducts);
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
@@ -57,10 +50,38 @@ export default function Dashboard() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Revenue" value="₹12.4L" change="+12.5% from last month" changeType="positive" icon={DollarSign} index={0} />
-        <StatCard label="Orders" value="1,284" change="+8.2% from last month" changeType="positive" icon={ShoppingCart} index={1} />
-        <StatCard label="Customers" value="3,462" change="+23.1% new customers" changeType="positive" icon={Users} index={2} />
-        <StatCard label="Inventory Items" value="892" change="14 low stock alerts" changeType="negative" icon={Package} index={3} />
+        <StatCard
+          label="Total Revenue"
+          value={stats?.revenue?.label ?? "—"}
+          change="+12.5% from last month"
+          changeType="positive"
+          icon={DollarSign}
+          index={0}
+        />
+        <StatCard
+          label="Orders"
+          value={stats?.orders?.total?.toLocaleString() ?? "—"}
+          change="+8.2% from last month"
+          changeType="positive"
+          icon={ShoppingCart}
+          index={1}
+        />
+        <StatCard
+          label="Customers"
+          value={stats?.customers?.total?.toLocaleString() ?? "—"}
+          change={`+${stats?.customers?.newThisMonth ?? 0} new customers`}
+          changeType="positive"
+          icon={Users}
+          index={2}
+        />
+        <StatCard
+          label="Inventory Items"
+          value={stats?.inventory?.totalItems?.toString() ?? "—"}
+          change={`${stats?.inventory?.lowStock ?? 0} low stock alerts`}
+          changeType="negative"
+          icon={Package}
+          index={3}
+        />
       </div>
 
       {/* Charts Row */}
@@ -123,7 +144,7 @@ export default function Dashboard() {
             <PieChart>
               <Pie data={categoryData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" paddingAngle={3}>
                 {categoryData.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i]} />
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip contentStyle={{ fontSize: "12px", borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
@@ -133,7 +154,7 @@ export default function Dashboard() {
             {categoryData.map((cat, i) => (
               <div key={cat.name} className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full" style={{ background: COLORS[i] }} />
+                  <span className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
                   {cat.name}
                 </span>
                 <span className="font-mono font-medium">{cat.value}%</span>
@@ -175,11 +196,13 @@ export default function Dashboard() {
                   <tr key={order.id} className="table-row">
                     <td className="table-cell font-mono text-xs">{order.id}</td>
                     <td className="table-cell">{order.customer}</td>
-                    <td className="table-cell font-mono font-medium">{order.amount}</td>
+                    <td className="table-cell font-mono font-medium">
+                      ₹{Number(order.amount).toLocaleString("en-IN")}
+                    </td>
                     <td className="table-cell">
                       <span className={
                         order.status === "Delivered" ? "badge-success" :
-                        order.status === "Shipped" ? "badge-primary" : "badge-warning"
+                        order.status === "Shipped"   ? "badge-primary" : "badge-warning"
                       }>
                         {order.status}
                       </span>
@@ -216,9 +239,11 @@ export default function Dashboard() {
                   <tr key={p.name} className="table-row">
                     <td className="table-cell font-medium">{p.name}</td>
                     <td className="table-cell font-mono">{p.sales}</td>
-                    <td className="table-cell font-mono font-medium">{p.revenue}</td>
+                    <td className="table-cell font-mono font-medium">
+                      ₹{Number(p.revenue).toLocaleString("en-IN")}
+                    </td>
                     <td className="table-cell">
-                      {p.trend === "up" ? (
+                      {Number(p.sales) > 200 ? (
                         <TrendingUp className="w-4 h-4 text-success" />
                       ) : (
                         <TrendingDown className="w-4 h-4 text-destructive" />
