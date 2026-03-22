@@ -17,10 +17,42 @@ const { errorHandler, notFound } = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+function normalizeOrigin(value) {
+  return (value || '').trim().replace(/\/+$/, '');
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function ruleToRegExp(rule) {
+  const escaped = escapeRegExp(rule).replace(/\\\*/g, '[^.]+');
+  return new RegExp(`^${escaped}$`);
+}
+
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map(normalizeOrigin)
+  .filter(Boolean);
+
+const allowedOriginPatterns = allowedOrigins.map(ruleToRegExp);
+
 // ─── Middleware ──────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow non-browser requests like curl/postman with no Origin header.
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const requestOrigin = normalizeOrigin(origin);
+    if (allowedOriginPatterns.some((pattern) => pattern.test(requestOrigin))) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -50,7 +82,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🚀 Feature Frenzy API running on http://localhost:${PORT}`);
   console.log(`   Environment : ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   CORS origin : ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
+  console.log(`   CORS origin : ${allowedOrigins.join(', ') || 'http://localhost:5173'}`);
 });
 
 module.exports = app;
